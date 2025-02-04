@@ -1,4 +1,4 @@
-package com.example.wearos_spotholes
+package br.com.spotholes.android.spotholes_android
 
 import io.flutter.embedding.android.FlutterActivity
 
