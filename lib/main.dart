@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
-// import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:watch_ble_connection_plugin/watch_ble_connection_plugin.dart';
-
 import 'package:wear_plus/wear_plus.dart';
 
 import '../utilities/vibration_manager.dart';
@@ -24,6 +23,8 @@ class _MyAppState extends State<MyApp> {
   final _countSpotholesInRoute = signal(0);
   late final _themeColor =
       computed(() => _isDeephole.value ? Colors.white : Colors.black);
+  final _isWakeLockActive = signal(false);
+  // final _screenRotationAngle = signal(35.00);
 
   Function? _startVibrationMonitorAlertDispose;
 
@@ -62,14 +63,25 @@ class _MyAppState extends State<MyApp> {
         if (_currentSpotholeDistance.value < 100) {
           VibrationManager.alertImminentRisk();
         } else if (_currentSpotholeDistance.value < 200) {
-          // WakelockPlus.enable();
           VibrationManager.alertProximity();
         } else {
-          // WakelockPlus.disable();
           VibrationManager.cancelVibration();
         }
       },
     );
+  }
+
+  _toggleWakeLock() {
+    if (_isWakeLockActive.value) {
+      WakelockPlus.disable();
+    } else {
+      WakelockPlus.enable();
+    }
+    _isWakeLockActive.value = !_isWakeLockActive.value;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * (3.141592653589793 / 180);
   }
 
   @override
@@ -84,205 +96,302 @@ class _MyAppState extends State<MyApp> {
       (_) => MaterialApp(
         home: AmbientMode(
           builder: (context, mode, child) {
-            return Watch(
-              (_) => _onRoute.value
-                  ? mode == WearMode.active
-                      ? Watch(
-                          (_) => _countSpotholesInRoute.value == 0
-                              ? Scaffold(
-                                  backgroundColor: Colors.black,
-                                  body: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                            'assets/images/markholes_thumbs_up.png',
-                                            width: 75,
-                                            height: 75),
-                                        Text(
-                                          'Tudo OK, não há alertas na rota',
-                                          textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge!
-                                              .copyWith(
-                                                color: Colors.white,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              : Scaffold(
-                                  backgroundColor: _isDeephole.value
-                                      ? const Color.fromARGB(255, 255, 0, 0)
-                                      : Colors.yellow,
-                                  body: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        _isDeephole.value
-                                            ? Image.asset(
-                                                'assets/images/pothole_red_sign.png',
-                                                width: 40,
-                                                height: 40)
-                                            : Image.asset(
-                                                'assets/images/pothole_sign.png',
-                                                width: 40,
-                                                height: 40),
-                                        if (_countSpotholesInRoute.value > 0)
+            return Transform.rotate(
+              angle: _degreesToRadians(30),
+              child: Watch(
+                (_) => _onRoute.value
+                    ? mode == WearMode.active
+                        ? Watch(
+                            (_) => _countSpotholesInRoute.value == 0
+                                ? Scaffold(
+                                    backgroundColor: Colors.black,
+                                    body: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                              'assets/images/markholes_thumbs_up.png',
+                                              width: 75,
+                                              height: 75),
                                           Text(
-                                            _spotholeFormattedDistance.value,
+                                            'Tudo OK, não há alertas na rota',
+                                            textAlign: TextAlign.center,
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .displayLarge!
+                                                .titleLarge!
                                                 .copyWith(
-                                                  color: _themeColor.value,
+                                                  color: Colors.white,
                                                 ),
                                           ),
-                                        Text(
-                                          _countSpotholesInRoute.value == 1
-                                              ? '${_countSpotholesInRoute.value} alerta'
-                                              : '${_countSpotholesInRoute.value} alertas',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge!
-                                              .copyWith(
-                                                color: _themeColor.value,
-                                              ),
-                                        ),
-                                        Watch(
-                                          (_) => Tooltip(
-                                            message: VibrationManager
-                                                    .isVibrationActive.value
-                                                ? 'Desativar alerta por vibração'
-                                                : 'Ativar alerta por vibração',
-                                            child: ElevatedButton(
-                                              onPressed: () => VibrationManager
-                                                  .toggleVibrationAlert(),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                shadowColor: Colors.transparent,
-                                                elevation: 0,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 8),
-                                                minimumSize: const Size(4, 4),
-                                                shape: RoundedRectangleBorder(
-                                                  // side: const BorderSide(width: 0.5),
-                                                  borderRadius:
-                                                      BorderRadius.circular(16),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : Scaffold(
+                                    backgroundColor: _isDeephole.value
+                                        ? const Color.fromARGB(255, 255, 0, 0)
+                                        : Colors.yellow,
+                                    body: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          _isDeephole.value
+                                              ? Tooltip(
+                                                  message:
+                                                      "Buraco acentuado, atenção!",
+                                                  child: Image.asset(
+                                                      'assets/images/pothole_red_sign.png',
+                                                      width: 40,
+                                                      height: 40),
+                                                )
+                                              : Tooltip(
+                                                  message:
+                                                      "Buraco ou pista irregular",
+                                                  child: Image.asset(
+                                                      'assets/images/pothole_sign.png',
+                                                      width: 40,
+                                                      height: 40),
                                                 ),
-                                              ),
-                                              child: VibrationManager
-                                                      .isVibrationActive.value
-                                                  ? Icon(Icons.vibration,
-                                                      color: _themeColor.value)
-                                                  : Stack(
-                                                      // alignment: Alignment.center,
-                                                      children: [
-                                                        Icon(
-                                                            Icons.phone_android,
-                                                            color: _themeColor
-                                                                .value),
-                                                        Icon(Icons.close,
-                                                            color: _themeColor
-                                                                .value),
-                                                      ],
+                                          if (_countSpotholesInRoute.value > 0)
+                                            Tooltip(
+                                              message:
+                                                  "Distância do próximo risco",
+                                              child: Text(
+                                                _spotholeFormattedDistance
+                                                    .value,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .displayLarge!
+                                                    .copyWith(
+                                                      color: _themeColor.value,
                                                     ),
+                                              ),
+                                            ),
+                                          Tooltip(
+                                            message: "Total de alertas na rota",
+                                            child: Text(
+                                              _countSpotholesInRoute.value == 1
+                                                  ? '${_countSpotholesInRoute.value} alerta'
+                                                  : '${_countSpotholesInRoute.value} alertas',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge!
+                                                  .copyWith(
+                                                    color: _themeColor.value,
+                                                  ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Watch(
+                                                  (_) => Tooltip(
+                                                    message: _isWakeLockActive
+                                                            .value
+                                                        ? 'Desativar tela sempre ativa'
+                                                        : 'Ativar tela sempre ativa',
+                                                    child: ElevatedButton(
+                                                      onPressed: () =>
+                                                          _toggleWakeLock(),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        shadowColor:
+                                                            Colors.transparent,
+                                                        elevation: 0,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 8),
+                                                        minimumSize:
+                                                            const Size(4, 4),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          // side: const BorderSide(width: 0.5),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(16),
+                                                        ),
+                                                      ),
+                                                      child: !_isWakeLockActive
+                                                              .value
+                                                          ? Icon(
+                                                              Icons
+                                                                  .screen_lock_portrait,
+                                                              color: _themeColor
+                                                                  .value)
+                                                          : Stack(
+                                                              // alignment: Alignment.center,
+                                                              children: [
+                                                                Icon(
+                                                                  Icons
+                                                                      .screen_lock_portrait,
+                                                                  color:
+                                                                      _themeColor
+                                                                          .value,
+                                                                ),
+                                                                Icon(
+                                                                  Icons.close,
+                                                                  color:
+                                                                      _themeColor
+                                                                          .value,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Watch(
+                                                  (_) => Tooltip(
+                                                    message: VibrationManager
+                                                            .isVibrationActive
+                                                            .value
+                                                        ? 'Desativar alerta por vibração'
+                                                        : 'Ativar alerta por vibração',
+                                                    child: ElevatedButton(
+                                                      onPressed: () =>
+                                                          VibrationManager
+                                                              .toggleVibrationAlert(),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        shadowColor:
+                                                            Colors.transparent,
+                                                        elevation: 0,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 8),
+                                                        minimumSize:
+                                                            const Size(4, 4),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          // side: const BorderSide(width: 0.5),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(16),
+                                                        ),
+                                                      ),
+                                                      child: VibrationManager
+                                                              .isVibrationActive
+                                                              .value
+                                                          ? Icon(
+                                                              Icons.vibration,
+                                                              color: _themeColor
+                                                                  .value)
+                                                          : Stack(
+                                                              // alignment: Alignment.center,
+                                                              children: [
+                                                                Icon(
+                                                                    Icons
+                                                                        .vibration,
+                                                                    color: _themeColor
+                                                                        .value),
+                                                                Icon(
+                                                                    Icons.close,
+                                                                    color: _themeColor
+                                                                        .value),
+                                                              ],
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ]),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                        )
-                      : Scaffold(
-                          backgroundColor: Colors.black,
-                          body: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Spotholes\nModo Econômico',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge!
-                                      .copyWith(
-                                        color: Colors.blueGrey,
-                                      ),
-                                ),
-                                const Icon(
-                                  Icons.battery_saver,
-                                  color: Colors.blueGrey,
-                                ),
-                              ],
+                          )
+                        : Scaffold(
+                            backgroundColor: Colors.black,
+                            body: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Spotholes\nModo Econômico',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                          color: Colors.blueGrey,
+                                        ),
+                                  ),
+                                  const Icon(
+                                    Icons.battery_saver,
+                                    color: Colors.blueGrey,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                    : mode == WearMode.active
+                        ? Scaffold(
+                            backgroundColor: Colors.black,
+                            body: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.route,
+                                          color: Colors.blueGrey,
+                                        ),
+                                        Icon(
+                                          Icons.smartphone,
+                                          color: Colors.blueGrey,
+                                        ),
+                                      ]),
+                                  Text(
+                                    'Inicie uma rota no app spotholes android',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                          color: Colors.blueGrey,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Scaffold(
+                            backgroundColor: Colors.black,
+                            body: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Spotholes\nModo Econômico',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                          color: Colors.blueGrey,
+                                        ),
+                                  ),
+                                  const Icon(
+                                    Icons.battery_saver,
+                                    color: Colors.blueGrey,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        )
-                  : mode == WearMode.active
-                      ? Scaffold(
-                          backgroundColor: Colors.black,
-                          body: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.route,
-                                        color: Colors.blueGrey,
-                                      ),
-                                      Icon(
-                                        Icons.smartphone,
-                                        color: Colors.blueGrey,
-                                      ),
-                                    ]),
-                                Text(
-                                  'Inicie uma rota no app spotholes android',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge!
-                                      .copyWith(
-                                        color: Colors.blueGrey,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : Scaffold(
-                          backgroundColor: Colors.black,
-                          body: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Spotholes\nModo Econômico',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge!
-                                      .copyWith(
-                                        color: Colors.blueGrey,
-                                      ),
-                                ),
-                                const Icon(
-                                  Icons.battery_saver,
-                                  color: Colors.blueGrey,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+              ),
             );
           },
         ),
