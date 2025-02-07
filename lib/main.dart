@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:signals/signals_flutter.dart';
+import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:watch_ble_connection_plugin/watch_ble_connection_plugin.dart';
 import 'package:wear_plus/wear_plus.dart';
 
 import '../utilities/vibration_manager.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  runApp(const MyApp());
+  FlutterNativeSplash.remove();
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -16,6 +23,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final redAlertColor = const Color(0xFFFF0000);
+
   final _onRoute = signal(false);
   final _isDeephole = signal(false);
   final _currentSpotholeDistance = signal(0.0);
@@ -23,7 +32,7 @@ class _MyAppState extends State<MyApp> {
   final _countSpotholesInRoute = signal(0);
   late final _themeColor =
       computed(() => _isDeephole.value ? Colors.white : Colors.black);
-  final _isWakeLockActive = signal(false);
+  final _isWakeLockActive = signal(true);
   // final _screenRotationAngle = signal(35.00);
 
   Function? _startVibrationMonitorAlertDispose;
@@ -31,6 +40,7 @@ class _MyAppState extends State<MyApp> {
   @override
   initState() {
     super.initState();
+    WakelockPlus.enable();
     _startVibrationMonitorAlert();
     WatchListener.listenForMessage((data) {
       if (data.containsKey("currentSpotholeDistance")) {
@@ -130,7 +140,7 @@ class _MyAppState extends State<MyApp> {
                                   )
                                 : Scaffold(
                                     backgroundColor: _isDeephole.value
-                                        ? const Color.fromARGB(255, 255, 0, 0)
+                                        ? redAlertColor
                                         : Colors.yellow,
                                     body: Center(
                                       child: Column(
@@ -302,6 +312,55 @@ class _MyAppState extends State<MyApp> {
                                                             ),
                                                     ),
                                                   ),
+                                                ),
+                                                // TODO: [test dev] botão para testar a vibração
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    for (int i = 0;
+                                                        i < 10;
+                                                        i++) {
+                                                      Vibration.vibrate(
+                                                        amplitude: 255,
+                                                        pattern: [
+                                                          0,
+                                                          500,
+                                                          100,
+                                                          200,
+                                                          100,
+                                                          200
+                                                        ],
+                                                      );
+                                                      Future.delayed(
+                                                        const Duration(
+                                                          seconds: 1,
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                    shadowColor:
+                                                        Colors.transparent,
+                                                    elevation: 0,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 8),
+                                                    minimumSize:
+                                                        const Size(4, 4),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                  ),
+                                                  child: Icon(
+                                                      Icons
+                                                          .text_snippet_outlined,
+                                                      color: _themeColor.value),
                                                 ),
                                               ]),
                                         ],
