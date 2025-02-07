@@ -37,7 +37,14 @@ class VibrationManager {
     if (isVibrationActive.value &&
         await isVibrationAvailable() &&
         !isProximityAlertActive) {
-      Vibration.vibrate(pattern: [0, 200, 300, 200]);
+      if (await Vibration.hasAmplitudeControl()) {
+        Vibration.vibrate(
+          amplitude: 255,
+          pattern: [0, 200, 300, 200],
+        );
+      } else {
+        Vibration.vibrate(pattern: [0, 200, 300, 200]);
+      }
     }
   }
 
@@ -51,7 +58,16 @@ class VibrationManager {
     if (isVibrationActive.value &&
         await isVibrationAvailable() &&
         !isImminentRiskAlertActive) {
-      Vibration.vibrate(pattern: [0, 500, 100, 200, 100, 200]);
+      if (await Vibration.hasAmplitudeControl()) {
+        Vibration.vibrate(
+          amplitude: 255,
+          pattern: [0, 500, 100, 200, 100, 200],
+        );
+      } else {
+        Vibration.vibrate(
+          pattern: [0, 500, 100, 200, 100, 200],
+        );
+      }
     }
   }
 
