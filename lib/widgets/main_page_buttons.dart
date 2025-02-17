@@ -103,10 +103,8 @@ class _MainPageButtonsState extends State<MainPageButtons> {
     return Watch(
       (_) => ElevatedButton(
         onPressed: () async {
-          await Future.delayed(const Duration(seconds: 3));
           await Vibration.vibrate(
             amplitude: 255,
-            // Longo, curto, curto (1 segundo)
             pattern: vibratePatternLongShortShort,
           );
           await Future.delayed(const Duration(seconds: 3));
