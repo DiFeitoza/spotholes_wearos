@@ -1,4 +1,5 @@
 import 'package:signals/signals.dart';
+import 'package:spotholes_wearos/utilities/constants.dart';
 import 'package:vibration/vibration.dart';
 
 /// A manager class for handling vibration alerts on the device.
@@ -28,11 +29,6 @@ class VibrationManager {
   }
 
   /// Triggers a vibration pattern for proximity alert.
-  ///
-  /// The vibration pattern consists of a 200ms vibration followed by a 300ms pause,
-  /// and then another 200ms vibration. This method checks if the device supports
-  /// vibration and if the proximity alert is not already active before triggering
-  /// the vibration.
   static Future<void> alertProximity() async {
     if (isVibrationActive.value &&
         await isVibrationAvailable() &&
@@ -40,20 +36,15 @@ class VibrationManager {
       if (await Vibration.hasAmplitudeControl()) {
         Vibration.vibrate(
           amplitude: 255,
-          pattern: [0, 200, 300, 200],
+          pattern: vibratePatternLongShortShort,
         );
       } else {
-        Vibration.vibrate(pattern: [0, 200, 300, 200]);
+        Vibration.vibrate(pattern: vibratePatternLongShortShort);
       }
     }
   }
 
   /// Triggers a vibration pattern for imminent risk alert.
-  ///
-  /// The vibration pattern consists of a 500ms vibration followed by a 100ms pause,
-  /// then a 200ms vibration, another 100ms pause, and a final 200ms vibration.
-  /// This method checks if the device supports vibration and if the imminent risk
-  /// alert is not already active before triggering the vibration.
   static Future<void> alertImminentRisk() async {
     if (isVibrationActive.value &&
         await isVibrationAvailable() &&
@@ -61,11 +52,11 @@ class VibrationManager {
       if (await Vibration.hasAmplitudeControl()) {
         Vibration.vibrate(
           amplitude: 255,
-          pattern: [0, 500, 100, 200, 100, 200],
+          pattern: vibratePatternIntenseBonkBonkBonk,
         );
       } else {
         Vibration.vibrate(
-          pattern: [0, 500, 100, 200, 100, 200],
+          pattern: vibratePatternIntenseBonkBonkBonk,
         );
       }
     }
