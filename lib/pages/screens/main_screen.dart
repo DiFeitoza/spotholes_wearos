@@ -22,14 +22,16 @@ class _MainScreenState extends State<MainScreen> {
   late final _countSpotholesInRoute = _mainPageController.countSpotholesInRoute;
 
   // Colors
-  late final _alertColor = _mainPageController.alertColor;
-  late final _contrastAlertColor = _mainPageController.contrastAlertColor;
+  late final _mainScreenBackgroundColor =
+      _mainPageController.mainScreenBackgroundColor;
+  late final _mainScreenBackgroundContrastColor =
+      _mainPageController.mainScreenBackgroundContrastColor;
 
   @override
   Watch build(BuildContext context) {
     return Watch(
       (_) => Scaffold(
-        backgroundColor: _alertColor.value,
+        backgroundColor: _mainScreenBackgroundColor.value,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -54,7 +56,7 @@ class _MainScreenState extends State<MainScreen> {
                     (_) => Text(
                       _spotholeFormattedDistance.value,
                       style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                            color: _contrastAlertColor.value,
+                            color: _mainScreenBackgroundContrastColor.value,
                           ),
                     ),
                   ),
@@ -68,7 +70,7 @@ class _MainScreenState extends State<MainScreen> {
                         ? '${_countSpotholesInRoute.value} alerta'
                         : '${_countSpotholesInRoute.value} alertas',
                     style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          color: _contrastAlertColor.value,
+                          color: _mainScreenBackgroundContrastColor.value,
                         ),
                   ),
                 ),

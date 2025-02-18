@@ -7,7 +7,7 @@ import '../utilities/constants.dart';
 import '../utilities/vibration_manager.dart';
 
 class MainPageController {
-  Function? _dispose;
+  Function? _dayTimeColorsEffect;
 
   // Configuration
   final _isWakeLockActive = signal(true, debugLabel: "_isWakeLockActive");
@@ -23,17 +23,33 @@ class MainPageController {
 
   final _isSpotholeClose = signal(false, debugLabel: "_isSpotholeClose");
 
-  late final _contrastAlertColor = computed(
-      () => _isDeephole.value ? Colors.white : Colors.black,
-      debugLabel: "_contrastAlertColor");
   late final _alertColor = computed(
-      () => _isDeephole.value ? redAlertColor : Colors.yellow,
-      debugLabel: "_alertColor");
+    () => _isDeephole.value ? deepHoleAlertColor : regularHoleAlertColor,
+    debugLabel: "_alertColor",
+  );
+
+  late final _alertContrastColor = computed(
+    () => _isDeephole.value
+        ? deepHoleAlertContrastColor
+        : regularHoleAlertContrastColor,
+    debugLabel: "_alertContrastColor",
+  );
+
+  final _isDaytimeColorsActive = signal(false);
 
   // Flash container
   final _showVisualAlert = signal(false, debugLabel: "_showVisualAlert");
-  late final _flashBackgroundColor =
-      signal(_alertColor.value, debugLabel: "_flashBackgroundColor");
+  late final _visualAlertBackgroundColor =
+      signal(_alertColor.value, debugLabel: "_visualAlertBackgroundColor");
+  late final _visualAlertBackgroundContrastColor = signal(
+      _alertContrastColor.value,
+      debugLabel: "_visualAlertBackgroundContrastColor");
+
+  late final _mainScreenBackgroundColor = signal(_alertColor.value);
+  late final _mainScreenBackgroundContrastColor =
+      signal(_alertContrastColor.value);
+
+  late final _mainButtonsColor = signal(_alertContrastColor.value);
 
   // Getters - Spotholes related
   Signal<bool> get isWakeLockActive => _isWakeLockActive;
@@ -45,16 +61,60 @@ class MainPageController {
   Signal<bool> get isSpotholeClose => _isSpotholeClose;
 
   // Getters - Colors
+  Signal<bool> get isDaytimeColorsActive => _isDaytimeColorsActive;
   Computed<Color> get alertColor => _alertColor;
-  Computed<Color> get contrastAlertColor => _contrastAlertColor;
+  Computed<Color> get alertContrastColor => _alertContrastColor;
+  Signal<Color> get mainScreenBackgroundColor => _mainScreenBackgroundColor;
+  Signal<Color> get mainScreenBackgroundContrastColor =>
+      _mainScreenBackgroundContrastColor;
+  Signal<Color> get mainButtonsColor => _mainButtonsColor;
 
   // Getters - Flash container
   Signal<bool> get showVisualAlert => _showVisualAlert;
-  Signal<Color> get flashBackgroundColor => _flashBackgroundColor;
+  Signal<Color> get visualAlertBackgroundColor => _visualAlertBackgroundColor;
+  Signal<Color> get visualAlertBackgroundContrastColor =>
+      _visualAlertBackgroundContrastColor;
+
+  void _startDayTimeColorsEffect() {
+    _dayTimeColorsEffect = effect(
+      () {
+        if (_isDaytimeColorsActive.value) {
+          _mainScreenBackgroundColor.value = Colors.black;
+          _mainScreenBackgroundContrastColor.value = Colors.white;
+          _mainButtonsColor.value = Colors.white;
+          _visualAlertBackgroundColor.value = Colors.white;
+          _visualAlertBackgroundContrastColor.value = Colors.black;
+        } else {
+          _mainScreenBackgroundColor.value = _alertColor.value;
+          _mainScreenBackgroundContrastColor.value = _alertContrastColor.value;
+          _mainButtonsColor.value = _alertContrastColor.value;
+          _visualAlertBackgroundColor.value = _alertColor.value;
+          _visualAlertBackgroundContrastColor.value = Colors.black;
+        }
+      },
+      debugLabel: "_dayTimeColorsEffect",
+    );
+  }
 
   void initState() {
     WakelockPlus.enable();
+    _startDayTimeColorsEffect();
     _startBluetoothMessageListener();
+  }
+
+  bool isDayTime() {
+    final now = DateTime.now();
+    return now.hour >= 6 && now.hour < 18;
+  }
+
+  void _setDaytimeColors() {
+    if (isDayTime()) {
+      _isDaytimeColorsActive.value = true;
+    }
+  }
+
+  void toggleDaytimeColors() {
+    _isDaytimeColorsActive.value = !_isDaytimeColorsActive.value;
   }
 
   void _startBluetoothMessageListener() {
@@ -67,13 +127,15 @@ class MainPageController {
       } else if (data.containsKey("countSpotholesInRoute")) {
         _countSpotholesInRoute.value = data["countSpotholesInRoute"];
         _countSpotholesInRoute.value == 0
-            ? stopAlerts()
+            ? _stopAlerts()
             : _showVisualAlert.value = true;
       } else if (data.containsKey("connectedOnNavigationPage")) {
         bool isConnectedOnNavigationPage = data["connectedOnNavigationPage"];
         _connectedOnNavigationPage.value = isConnectedOnNavigationPage;
-        if (!isConnectedOnNavigationPage) {
-          stopAlerts();
+        if (isConnectedOnNavigationPage) {
+          _setDaytimeColors();
+        } else {
+          _stopAlerts();
         }
       }
     });
@@ -89,7 +151,7 @@ class MainPageController {
     }
   }
 
-  void stopAlerts() {
+  void _stopAlerts() {
     _showVisualAlert.value = false;
     VibrationManager.cancelVibration();
   }
@@ -124,7 +186,7 @@ class MainPageController {
   }
 
   dispose() {
-    stopAlerts();
-    _dispose!();
+    _stopAlerts();
+    _dayTimeColorsEffect!();
   }
 }

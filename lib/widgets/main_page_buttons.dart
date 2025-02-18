@@ -19,7 +19,8 @@ class _MainPageButtonsState extends State<MainPageButtons> {
   late final _mainPageController = widget.mainPageController;
 
   late final _isWakeLockActive = _mainPageController.isWakeLockActive;
-  late final _contrastAlertColor = _mainPageController.contrastAlertColor;
+  late final _isDaytimeColorsActive = _mainPageController.isDaytimeColorsActive;
+  late final _mainButtonsColor = _mainPageController.mainButtonsColor;
 
   _toggleWakeLock() {
     _mainPageController.toggleWakeLock();
@@ -45,18 +46,17 @@ class _MainPageButtonsState extends State<MainPageButtons> {
             ),
           ),
           child: !_isWakeLockActive.value
-              ? Icon(Icons.screen_lock_portrait,
-                  color: _contrastAlertColor.value)
+              ? Icon(Icons.screen_lock_portrait, color: _mainButtonsColor.value)
               : Stack(
                   // alignment: Alignment.center,
                   children: [
                     Icon(
                       Icons.screen_lock_portrait,
-                      color: _contrastAlertColor.value,
+                      color: _mainButtonsColor.value,
                     ),
                     Icon(
                       Icons.close,
-                      color: _contrastAlertColor.value,
+                      color: _mainButtonsColor.value,
                     ),
                   ],
                 ),
@@ -85,12 +85,12 @@ class _MainPageButtonsState extends State<MainPageButtons> {
             ),
           ),
           child: VibrationManager.isVibrationActive.value
-              ? Icon(Icons.vibration, color: _contrastAlertColor.value)
+              ? Icon(Icons.vibration, color: _mainButtonsColor.value)
               : Stack(
                   // alignment: Alignment.center,
                   children: [
-                    Icon(Icons.vibration, color: _contrastAlertColor.value),
-                    Icon(Icons.close, color: _contrastAlertColor.value),
+                    Icon(Icons.vibration, color: _mainButtonsColor.value),
+                    Icon(Icons.close, color: _mainButtonsColor.value),
                   ],
                 ),
         ),
@@ -136,8 +136,39 @@ class _MainPageButtonsState extends State<MainPageButtons> {
         child: Watch(
           (_) => Icon(
             Icons.text_snippet_outlined,
-            color: _contrastAlertColor.value,
+            color: _mainButtonsColor.value,
           ),
+        ),
+      ),
+    );
+  }
+
+  Watch _contrastColorToggleButton() {
+    return Watch(
+      (_) => Tooltip(
+        message: _isDaytimeColorsActive.value
+            ? 'Ativar contraste noturno'
+            : 'Ativar contraste diurno',
+        child: ElevatedButton(
+          onPressed: () => _mainPageController.toggleDaytimeColors(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            minimumSize: const Size(4, 4),
+            shape: RoundedRectangleBorder(
+              // side: const BorderSide(width: 0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: _isDaytimeColorsActive.value
+              ? Icon(Icons.light_mode, color: _mainButtonsColor.value)
+              : Stack(
+                  children: [
+                    Icon(Icons.dark_mode, color: _mainButtonsColor.value),
+                  ],
+                ),
         ),
       ),
     );
@@ -151,6 +182,7 @@ class _MainPageButtonsState extends State<MainPageButtons> {
         children: [
           _wakeLockToggleButton(),
           _vibrationToggleButton(),
+          _contrastColorToggleButton(),
           _vibrationTestButton(),
         ],
       ),

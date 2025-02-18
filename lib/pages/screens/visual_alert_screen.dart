@@ -17,9 +17,12 @@ class _VisualAlertScreenState extends State<VisualAlertScreen> {
   late final _mainPageController = widget.mainPageController;
 
   late final _showVisualAlert = _mainPageController.showVisualAlert;
-  late final _flashBackgroundColor = _mainPageController.flashBackgroundColor;
+  late final _visualAlertBackgroundColor =
+      _mainPageController.visualAlertBackgroundColor;
+  late final _visualAlertBackgroundContrastColor =
+      _mainPageController.visualAlertBackgroundContrastColor;
+  late final _flashBackgroundColor = signal(_visualAlertBackgroundColor.value);
   late final _isDeephole = _mainPageController.isDeephole;
-  late final _alertColor = _mainPageController.alertColor;
 
   Timer? _timer;
 
@@ -35,9 +38,9 @@ class _VisualAlertScreenState extends State<VisualAlertScreen> {
       const Duration(milliseconds: 350),
       (_) {
         _flashBackgroundColor.value =
-            _flashBackgroundColor.value == _alertColor.value
-                ? Colors.black
-                : _alertColor.value;
+            _flashBackgroundColor.value == _visualAlertBackgroundColor.value
+                ? _visualAlertBackgroundContrastColor.value
+                : _visualAlertBackgroundColor.value;
       },
     );
   }

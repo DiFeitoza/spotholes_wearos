@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 // System Colors
 const Color primaryColor = Color(0xFF7B61FF);
 const Color redAlertColor = Color.fromARGB(255, 255, 0, 0);
+const Color yellowAlertColor = Colors.yellow;
 
-// const Color primaryColor = Color(0xFF7B61FF);
-// const Color redPrimaryColor = Color(0xFFFF7070);
-// const Color redSecondaryColor = Color.fromARGB(255, 255, 74, 74);
+const deepHoleAlertColor = redAlertColor;
+const regularHoleAlertColor = yellowAlertColor;
+
+const deepHoleAlertContrastColor = Colors.white;
+const regularHoleAlertContrastColor = Colors.black;
 
 // Vibration Patterns
 // Longo, curto, curto (1 segundo)

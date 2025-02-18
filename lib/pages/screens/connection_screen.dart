@@ -16,11 +16,11 @@ class ConnectionScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.route,
-                  color: Colors.blueGrey,
+                  color: Colors.white,
                 ),
                 Icon(
                   Icons.smartphone,
-                  color: Colors.blueGrey,
+                  color: Colors.white,
                 ),
               ],
             ),
@@ -28,7 +28,7 @@ class ConnectionScreen extends StatelessWidget {
               'Inicie uma rota no app spotholes android',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Colors.blueGrey,
+                    color: Colors.white,
                   ),
             ),
           ],

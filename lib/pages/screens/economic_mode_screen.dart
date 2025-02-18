@@ -15,12 +15,12 @@ class EconomicModeScreen extends StatelessWidget {
               'Spotholes\nModo Econômico',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Colors.blueGrey,
+                    color: Colors.white,
                   ),
             ),
             const Icon(
               Icons.battery_saver,
-              color: Colors.blueGrey,
+              color: Colors.white,
             ),
           ],
         ),
